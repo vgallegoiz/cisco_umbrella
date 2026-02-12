@@ -79,6 +79,8 @@ class Input(smi.Script):
                 logger.info("getting account info")
                 client_secret, client_id, url = get_account_info(session_key, input_item.get("account"))
                 index = input_item.get("index")
+                input_types = input_item.get("input_type", "").split('|')
+                input_type_log = ",".join(input_types)
                 logger.info(f"index={index} input_name={normalized_input_name}")
 
                 logger.info(f"Initializing Umbrella: input_name={normalized_input_name}")
@@ -96,7 +98,16 @@ class Input(smi.Script):
                         start_time = last_checkpoint              
                     logger.info("Fetching Umbrella Logs...")
                     end_time = int(datetime.now().timestamp() * 1000)
-                    response = umbrella.get_report_logs(start_time=start_time, end_time=end_time)
+                    '''if "allowed" in input_types:
+
+                        '''
+                    '''if "blocked" in input_types:
+
+                        '''
+                    '''if "proxied" in input_types:
+
+                        '''
+                    response = umbrella.get_report_logs_all(start_time=start_time, end_time=end_time)
                     try:
                         data = response.json()
                     except Exception as e:
@@ -123,83 +134,6 @@ class Input(smi.Script):
             except Exception as e:
                 logger.info(f"Error during Cisco Umbrella ingestion {e}")
                 log.log_exception(logger, e, exc_label=ADDON_NAME, msg_before="Error during Cisco Umbrella ingestion")
-                
-                
-                '''if "management_logs" in input_types:
-                    try:
-                        logger.info("Getting checkpointer for management_logs")
-                        last_checkpoint = self.checkpoint.get(f"{tenant_name.lower()}_management_logs")
-                        start_time = ""
-                        if last_checkpoint is None:
-                            logger.info("There is no checkpointer on management_logs")
-                            start_time = datetime.datetime.now().timestamp() * 1000 # already in epoch ms
-                        else:
-                            start_time = last_checkpoint  # already in epoch ms
-
-                        logger.info("Fetching Cortex XDR management_logs...")
-                        response = cortex.get_audit_management_logs(start_time=start_time)
-                        try:
-                            data = response.json()
-                        except Exception as e:
-                            logger.error("No hay JSON")
-                            raise Exception
-                        now = datetime.datetime.now().timestamp()
-                        if response.status_code == 200 and data["reply"]["result_count"] != 0:
-                            for item in data['reply']['data']:
-                                item.update({'tenant': tenant_name, 'region': region})
-                                event = smi.Event(time="%.3f" % now, sourcetype="cortex:management_logs", index=index, source=tenant_name)
-                                event.stanza = input_name
-                                event.data = json.dumps(item, ensure_ascii=False, default=str)
-                                event_writer.write_event(event)
-                                logger.info("Management logs successfully ingested.")
-                        elif response.status_code == 200 and data["reply"]["result_count"] == 0:
-                            logger.info(f"No data in management_logs to ingest on {tenant_name} with {data}")
-                        else:
-                            logger.info(f"{response.status_code} with {data}")
-                        self.checkpoint.update(f"{tenant_name.lower()}_management_logs", str(int(now) * 1000))
-                        logger.info(f"Checkpointer on {tenant_name} and sourcetyepe agents_reports updated")
-                    except Exception as e:
-                        logger.info("Fallo en get response")
-                        log.log_exception(logger, e, exc_label=ADDON_NAME ,msg_before=f'client={tenant_name}')
-
-                if "agents_reports" in input_types:
-                    try:
-                        logger.info("Getting checkpointer for agents_reports")
-                        last_checkpoint = self.checkpoint.get(f"{tenant_name.lower()}_agents_reports")
-                        start_time = int()
-                        if last_checkpoint is None:
-                            logger.info("There is no checkpointer on agents_reports")
-                            start_time = int(datetime.datetime.now().timestamp() * 1000) # already in epoch ms
-                        else:
-                            start_time = int(last_checkpoint)  # already in epoch ms
-
-                        logger.info("Fetching Cortex XDR agents_reports...")
-                        response = cortex.get_audit_agent_logs(start_time=start_time)
-                        try:
-                            data = response.json()
-                        except Exception as e:
-                            logger.error("No hay JSON")
-                            raise Exception
-                        now = datetime.datetime.now().timestamp()
-                        if response.status_code == 200 and data["reply"]["result_count"] != 0:
-                            for item in data['reply']['data']:
-                                item.update({'tenant': tenant_name, 'region': region})
-                                event = smi.Event(time="%.3f" % now, sourcetype="cortex:agents_reports", index=index, source=tenant_name)
-                                event.stanza = input_name
-                                event.data = json.dumps(item, ensure_ascii=False, default=str)
-                                event_writer.write_event(event)
-                                logger.info("Agent reports logs successfully ingested.")
-                        elif response.status_code == 200 and data["reply"]["result_count"] == 0:
-                            logger.info(f"No data in agent_reports to ingest on {tenant_name} with {data}")
-                        else:
-                            logger.info(f"{response.status_code} with {data}")
-                        self.checkpoint.update(f"{tenant_name.lower()}_agents_reports", str(int(now) * 1000))
-                        logger.info(f"Checkpointer on {tenant_name} and sourcetyepe agents_reports updated")
-                    except Exception as e:
-                        logger.info("Fallo en get response")
-                        log.log_exception(logger, e, exc_label=ADDON_NAME ,msg_before=f'client={tenant_name}')
-                log.modular_input_end(logger, normalized_input_name)'''
-
 
 
 if __name__ == "__main__":

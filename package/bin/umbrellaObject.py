@@ -24,8 +24,22 @@ class Umbrella():
         self.headers["Authorization"] = f"Bearer {auth_data['access_token']}"
         self.headers["Content-Type"] = "application/json"
 
-    def get_report_logs(self, start_time, end_time):
-        print(self.headers  )
-        response = requests.get(url=f"{self.url}/reports/v2/activity?to={end_time}&from={start_time}&limit=4999", 
+    def get_report_logs_all(self, start_time, end_time):
+        response = requests.get(url=f"{self.url}/reports/v2/activity?to={end_time}&from={start_time}&limit=5000", 
+            headers=self.headers, verify=False)
+        return response
+
+    def get_report_logs_allowed(self, start_time, end_time):
+        response = requests.get(url=f"{self.url}/reports/v2/activity?to={end_time}&from={start_time}&limit=5000&verdict=allowed", 
+            headers=self.headers, verify=False)
+        return response
+
+    def get_report_logs_blocked(self, start_time, end_time):
+        response = requests.get(url=f"{self.url}/reports/v2/activity?to={end_time}&from={start_time}&limit=5000&verdict=blocked", 
+            headers=self.headers, verify=False)
+        return response
+    
+    def get_report_logs_proxied(self, start_time, end_time):
+        response = requests.get(url=f"{self.url}/reports/v2/activity?to={end_time}&from={start_time}&limit=5000&verdict=proxied", 
             headers=self.headers, verify=False)
         return response
